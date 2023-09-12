@@ -8,7 +8,7 @@ import { setHttpParams } from "../utility/utils";
  */
 export const getAll = async params => {
     params = setHttpParams(params);
-    return axios.get(`api/companies?${params}`);
+    return axios.get(`/companies?${params}`);
 };
 
 
@@ -18,7 +18,7 @@ export const getAll = async params => {
  * @returns {Promise<AxiosResponse<any>>}
  */
 export const getSingle = async id => {
-    return axios.get(`api/company/${id}`);
+    return axios.get(`/company/${id}`);
 };
 
 
@@ -28,7 +28,7 @@ export const getSingle = async id => {
  * @returns {Promise<AxiosResponse<any>>}
  */
 export const storeCompany = async data => {
-    return axios.post('api/company/new', data);
+    return axios.post('/company/new', data);
 };
 
 
@@ -39,5 +39,5 @@ export const storeCompany = async data => {
  * @returns {Promise<AxiosResponse<any>>}
  */
 export const updateCompany = async (data, id) => {
-    return axios.patch(`api/company/new/${id}`, data);
+    return axios.patch(`/company/new/${id}`, data);
 };
