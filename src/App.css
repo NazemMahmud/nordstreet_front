@@ -1,0 +1,28 @@
+.App {
+  text-align: center;
+}
+
+
+.App-link {
+  color: #61dafb;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  background-color: #767676 !important;
+  border-color: #767676 !important;
+}
+
+.loader .modal-content {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

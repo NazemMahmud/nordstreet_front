@@ -1,0 +1,13 @@
+version: '3'
+services:
+  react-app:
+    container_name: SCRAPE_FRONT
+    stdin_open: true
+    build: ./
+    ports:
+      - "3000:${PORT}"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - WATCHPACK_POLLING=true
