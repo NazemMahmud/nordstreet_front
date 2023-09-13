@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import DashboardLayout from "../../layout/DashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
-import LoaderComponent from "../../components/LoaderComponent";
 import { Card, Col, Row } from "react-bootstrap";
-import AddUpdateForm from "../../components/AddUpdateForm";
-import { SOMETHING_WENT_WRONG } from "../../config/constants";
-import ToastComponent from "../../components/ToastComponent";
-import { getAll, getSingle } from "../../services/company.service";
 import { useLocation, useNavigate } from "react-router-dom";
-import { setHttpParams } from "../../utility/utils";
+
+import DashboardLayout from "../../layout/DashboardLayout";
+import LoaderComponent from "../../components/LoaderComponent";
+import AddUpdateForm from "../../components/AddUpdateForm";
 import Datatable from "../../components/Datatable";
 import PaginationComponent from "../../components/PaginationComponent";
+import ToastComponent from "../../components/ToastComponent";
+
+import { SOMETHING_WENT_WRONG } from "../../config/constants";
+import { getAll } from "../../services/company.service";
+import { setHttpParams } from "../../utility/utils";
 
 const Company = () => {
     const columns = ['Name', 'Registration Code', 'VAT', 'Address', 'Phone'];
@@ -32,15 +34,17 @@ const Company = () => {
 
     const initialParams = {
         perPage: queryParams.get("pageOffset") ?? 10,
-        page: queryParams.get("page") ?? 1
+        page: queryParams.get("page") ?? 1,
     };
 
 
+    const [loadTime, setLoadTime] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [companyData, setCompanyData] = useState({});
     const [params, setParams] = useState(initialParams);
     const [dataList, setDataList] = useState([]);
     const [isSetData, setIsSetData] = useState(false);
+    const [oldCompanyData, setOldCompanyData] = useState({});
 
     // this info will come from API if it is paginated
     const [paginationInfo, setPaginationInfo] = useState({
@@ -59,7 +63,7 @@ const Company = () => {
 
     /** Get all/paginated ip address data for table **/
     useEffect( () => {
-        changeUrl();
+        getDataList();
     }, [params]);
 
     const loaderCallback = data => {
@@ -69,10 +73,10 @@ const Company = () => {
     /**
      * change url at the same time api call on params, so that individual URL can be used
      */
-    const changeUrl = () => {
+    const changeUrl = async () => {
         // todo: need to update the navigation, if params are same as prev, no need to navigate
         const urlParams = setHttpParams(params);
-        getDataList();
+        setLoadTime(1);
         navigate(location.pathname + urlParams ? '?' + urlParams : '');
     };
 
@@ -116,13 +120,17 @@ const Company = () => {
         // todo: this is being called 2 times, warning bug
         await getAll(params)
             .then(res => {
+                const companies = [...res.data.data.items.map(item => ({ ...item }))];
+                setCompanyData(companies);
                 responseData = convertPhoneToImage(res.data.data);
+
+                console.log('company: ', companies);
                 console.log('res: ', responseData);
                 setDataList(responseData.items);
                 setPagination(responseData.pagination);
-
                 setIsLoading(false);
                 setIsSetData(true);
+                changeUrl();
             })
             .catch(error => {
                 setIsLoading(false);
@@ -132,11 +140,17 @@ const Company = () => {
     };
 
 
+
     /**
-     * Call API & populate update form
+     * populate update form
      */
-    const handleEditCallback = async id => {
+    const handleEditCallback = id => {
+        setIsLoading(true);
+        console.log(companyData);
+        const response = companyData.find(item => item.id === id);
+        setOldCompanyData({ ...response });
         setIsLoading(false);
+
     };
 
     /**
@@ -148,6 +162,20 @@ const Company = () => {
             page: page,
         });
     };
+
+    /**
+     * After update, update data in the data table
+     * @param updatedData
+     */
+    const updateCallback = updatedData => {
+        const newDataList = [...dataList];
+        const findIndex = dataList.findIndex(item => item.id == updatedData.id);
+        newDataList[findIndex] = updatedData;
+        setDataList([...newDataList]);
+        setOldCompanyData({});
+        setIsLoading(false);
+    };
+
 
 
     return (
@@ -166,8 +194,8 @@ const Company = () => {
                     <Card >
                         <Card.Body>
                             {/*addCallback={addCallback}*/}
-                            {/*updateCallback={updateCallback}*/}
-                            <AddUpdateForm updateData={companyData}
+                            <AddUpdateForm updateData={oldCompanyData}
+                                           updateCallback={updateCallback}
                                            loaderCallback={loaderCallback} />
                         </Card.Body>
                     </Card>
