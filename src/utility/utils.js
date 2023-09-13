@@ -21,10 +21,7 @@ export const checkDisableButton = formInput => {
  */
 export const setHttpParams = (params) => {
     // delete key, if key has no value or value = null
-    Object.keys(params).forEach(
-        (key) =>
-            (params[key] == null || params[key] == "") && delete params[key]
-    );
+    Object.keys(params).forEach(key => (params[key] == null || params[key] == "") && delete params[key]);
 
     let length = Object.keys(params).length;
     let param = "";

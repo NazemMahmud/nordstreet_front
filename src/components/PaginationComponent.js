@@ -2,7 +2,6 @@ import React from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 
 const PaginationComponent = ({ paginationInfo, paginationCallback }) => {
-console.log('asdsad: ', paginationInfo);
     /**
      * Use it for pagination callback to update data in table
      * @param page

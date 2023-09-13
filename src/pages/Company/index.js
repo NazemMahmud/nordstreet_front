@@ -59,8 +59,8 @@ const Company = () => {
 
     /** Get all/paginated ip address data for table **/
     useEffect( () => {
-        getDataList();
-    }, []);
+        changeUrl();
+    }, [params]);
 
     const loaderCallback = data => {
         setIsLoading(data);
@@ -70,7 +70,9 @@ const Company = () => {
      * change url at the same time api call on params, so that individual URL can be used
      */
     const changeUrl = () => {
+        // todo: need to update the navigation, if params are same as prev, no need to navigate
         const urlParams = setHttpParams(params);
+        getDataList();
         navigate(location.pathname + urlParams ? '?' + urlParams : '');
     };
 
@@ -111,6 +113,7 @@ const Company = () => {
 
     const getDataList = async () => {
         setIsLoading(true);
+        // todo: this is being called 2 times, warning bug
         await getAll(params)
             .then(res => {
                 responseData = convertPhoneToImage(res.data.data);
@@ -118,10 +121,8 @@ const Company = () => {
                 setDataList(responseData.items);
                 setPagination(responseData.pagination);
 
-
                 setIsLoading(false);
                 setIsSetData(true);
-                changeUrl();
             })
             .catch(error => {
                 setIsLoading(false);
@@ -158,7 +159,7 @@ const Company = () => {
                             pauseOnFocusLoss
                             draggable/>
             {/*todo*/}
-            <LoaderComponent isLoading={false} />
+            <LoaderComponent isLoading={isLoading} />
             <p>Company info</p>
             <Row className="mb-5">
                 <Col>
