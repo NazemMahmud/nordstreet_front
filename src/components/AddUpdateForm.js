@@ -1,10 +1,10 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import ToastComponent from "./ToastComponent";
 import { storeCompany, updateCompany } from "../services/company.service";
 import { checkDisableButton } from "../utility/utils";
-import 'react-toastify/dist/ReactToastify.css';
 import { DATA_CREATE_SUCCESS, DATA_CREATE_FAILED, DATA_UPDATE_FAILED } from "../config/constants";
 
 // addCallback,
@@ -55,7 +55,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
     );
     const inputKeys = Object.keys(formInput);
 
-    /** If there is a data to populate, then populate the form for update action  */
+    /**  populate the form for update action  */
     useEffect(() => {
         if (updateData.id) {
             setIsUpdate(true);
@@ -120,7 +120,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
         formValidation(input, inputIdentifier);
     };
 
-    // reset form after submit successful
+    // reset form after submit successful or cancel button click
     const resetForm = () => {
         const formData = { ...formInput };
         for (let item in formData) {
@@ -129,6 +129,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
             formData[item].touched = false;
         }
         setFormInput({ ...formInput, ...formData });
+        setIsUpdate(false);
     };
 
 
@@ -154,7 +155,11 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
             });
     };
 
-    // update API call
+    /**
+     * Update API call, reset form to create mood, update data in table
+     * @param event
+     * @returns {Promise<void>}
+     */
     const update = async event => {
         event.preventDefault();
         const formData = {};
@@ -162,23 +167,23 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
             formData[item] = formInput[item].value;
         }
 
-        // to start loader
         loaderCallback(true);
-        // await updateCompany(formData, updateData.id)
-        //     .then(response => {
-        //         updateData = {
-        //             ...updateData,
-        //             code: formData.code,
-        //         };
-        //         companyUpdateCallback(updateData);
-        //         resetForm();
-        //         toast.success(<ToastComponent messages={response.data.data.message} />);
-        //     })
-        //     .catch(error => {
-        //         const errorMessage = error?.response?.data?.error ?? DATA_UPDATE_FAILED;
-        //         loaderCallback(false);
-        //         toast.error(<ToastComponent messages={errorMessage}/>);
-        //     });
+
+        await updateCompany(formData, updateData.id)
+            .then(response => {
+                updateData = {
+                    ...updateData,
+                    ...formData,
+                };
+                updateCallback(updateData);
+                resetForm();
+                toast.success(<ToastComponent messages={response.data.message} />);
+            })
+            .catch(error => {
+                const errorMessage = error?.response?.data?.message ?? DATA_UPDATE_FAILED;
+                loaderCallback(false);
+                toast.error(<ToastComponent messages={errorMessage}/>);
+            });
     };
 
     return (
@@ -277,10 +282,17 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
                     </InputGroup>
                 </Form.Group>
 
+                {   updateData.id ?
+                    <Button variant="secondary" type="button" className="float-right" style={{ marginLeft: '10px'}}
+                    onClick={() => resetForm()}>
+                        Cancel
+                    </Button> : <></>
+                }
                 <Button variant="primary" type="submit" className="float-right"
                         disabled={isDisabled}>
                     {updateData.id ? 'Update' : 'Submit'}
                 </Button>
+
 
             </Form>
         </div>

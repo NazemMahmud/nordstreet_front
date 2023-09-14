@@ -59,8 +59,6 @@ const Company = () => {
         hasPreviousPage: '',
     });
 
-
-
     /** Get all/paginated ip address data for table **/
     useEffect( () => {
         getDataList();
@@ -86,9 +84,13 @@ const Company = () => {
      * @returns {*}
      */
     const convertPhoneToImage = data => {
-        data.items.forEach(item => {
-            item.mobile_phone = `<img src=${item.mobile_phone} alt='Mobile Phone' />`;
-        });
+        if(data.hasOwnProperty('items')) {
+            data.items.forEach(item => {
+                item.mobile_phone = `<img src=${item.mobile_phone} alt='Mobile Phone' />`;
+            });
+        } else {
+            data.mobile_phone = `<img src=${data.mobile_phone} alt='Mobile Phone' />`;
+        }
 
         return data;
     };
@@ -114,7 +116,6 @@ const Company = () => {
         });
     };
 
-
     const getDataList = async () => {
         setIsLoading(true);
         // todo: this is being called 2 times, warning bug
@@ -124,8 +125,6 @@ const Company = () => {
                 setCompanyData(companies);
                 responseData = convertPhoneToImage(res.data.data);
 
-                console.log('company: ', companies);
-                console.log('res: ', responseData);
                 setDataList(responseData.items);
                 setPagination(responseData.pagination);
                 setIsLoading(false);
@@ -138,7 +137,6 @@ const Company = () => {
                 toast.error(<ToastComponent messages={errorMessage}/>);
             });
     };
-
 
 
     /**
@@ -168,14 +166,20 @@ const Company = () => {
      * @param updatedData
      */
     const updateCallback = updatedData => {
+        const singleCompany =  Object.assign({}, updatedData) ;
+        const companies = [...companyData];
+        let findIndex = companyData.findIndex(item => item.id == singleCompany.id);
+        companies[findIndex] = singleCompany;
+        setCompanyData(companies);
+
         const newDataList = [...dataList];
-        const findIndex = dataList.findIndex(item => item.id == updatedData.id);
-        newDataList[findIndex] = updatedData;
+        findIndex = dataList.findIndex(item => item.id == updatedData.id);
+        newDataList[findIndex] = convertPhoneToImage(updatedData);
         setDataList([...newDataList]);
+
         setOldCompanyData({});
         setIsLoading(false);
     };
-
 
 
     return (

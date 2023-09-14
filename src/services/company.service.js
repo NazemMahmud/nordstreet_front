@@ -3,22 +3,12 @@ import { setHttpParams } from "../utility/utils";
 
 /**
  * Get all paginated data of companies
- * @param params => optional { pageOffset | page | orderBy | sortBy }
+ * @param params => optional { pageOffset | page }
  * @returns {Promise<AxiosResponse<any>>}
  */
 export const getAll = async params => {
     params = setHttpParams(params);
     return axios.get(`/companies?${params}`);
-};
-
-
-/**
- * Get single data
- * @param id
- * @returns {Promise<AxiosResponse<any>>}
- */
-export const getSingle = async id => {
-    return axios.get(`/company/${id}`);
 };
 
 
@@ -33,11 +23,11 @@ export const storeCompany = async data => {
 
 
 /**
- * Update an company
+ * Update a company
  * @param data
  * @param id
  * @returns {Promise<AxiosResponse<any>>}
  */
 export const updateCompany = async (data, id) => {
-    return axios.patch(`/company/new/${id}`, data);
+    return axios.put(`/company/${id}`, data);
 };
