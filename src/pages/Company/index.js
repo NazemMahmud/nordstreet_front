@@ -7,11 +7,12 @@ import DashboardLayout from "../../layout/DashboardLayout";
 import LoaderComponent from "../../components/LoaderComponent";
 import AddUpdateForm from "../../components/AddUpdateForm";
 import Datatable from "../../components/Datatable";
+import DeleteConfirmation from "../../components/DeleteConfirmation";
 import PaginationComponent from "../../components/PaginationComponent";
 import ToastComponent from "../../components/ToastComponent";
 
 import { SOMETHING_WENT_WRONG } from "../../config/constants";
-import { getAll } from "../../services/company.service";
+import {deleteCompany, getAll} from "../../services/company.service";
 import { setHttpParams } from "../../utility/utils";
 
 const Company = () => {
@@ -38,13 +39,14 @@ const Company = () => {
     };
 
 
-    const [loadTime, setLoadTime] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
-    const [companyData, setCompanyData] = useState({});
+    const [companyData, setOriginalCompanyData] = useState({});
     const [params, setParams] = useState(initialParams);
     const [dataList, setDataList] = useState([]);
     const [isSetData, setIsSetData] = useState(false);
     const [oldCompanyData, setOldCompanyData] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [deleteId, setDeleteId] = useState('');
 
     // this info will come from API if it is paginated
     const [paginationInfo, setPaginationInfo] = useState({
@@ -74,7 +76,6 @@ const Company = () => {
     const changeUrl = async () => {
         // todo: need to update the navigation, if params are same as prev, no need to navigate
         const urlParams = setHttpParams(params);
-        setLoadTime(1);
         navigate(location.pathname + urlParams ? '?' + urlParams : '');
     };
 
@@ -122,7 +123,7 @@ const Company = () => {
         await getAll(params)
             .then(res => {
                 const companies = [...res.data.data.items.map(item => ({ ...item }))];
-                setCompanyData(companies);
+                setOriginalCompanyData(companies);
                 responseData = convertPhoneToImage(res.data.data);
 
                 setDataList(responseData.items);
@@ -170,7 +171,7 @@ const Company = () => {
         const companies = [...companyData];
         let findIndex = companyData.findIndex(item => item.id == singleCompany.id);
         companies[findIndex] = singleCompany;
-        setCompanyData(companies);
+        setOriginalCompanyData(companies);
 
         const newDataList = [...dataList];
         findIndex = dataList.findIndex(item => item.id == updatedData.id);
@@ -179,6 +180,45 @@ const Company = () => {
 
         setOldCompanyData({});
         setIsLoading(false);
+    };
+
+
+    /**
+     * on click delete confirmation modal at first
+     */
+    const handleDelete = (id) => {
+        setDeleteId(id);
+        setShowModal(!showModal);
+    };
+
+    /**
+     * Delete data through API
+     */
+    const handleDeleteConfirm = async () => {
+        setShowModal(!showModal);
+        setIsLoading(true);
+
+        await deleteCompany(deleteId)
+            .then(res => {
+                const companies = [...companyData];
+                const updatedCompanies = companies.filter(item => item.id !== deleteId);
+                setOriginalCompanyData(updatedCompanies);
+
+                const newDataList = [...dataList];
+                const updatedList = newDataList.filter(item => item.id !== deleteId);
+                setDataList(updatedList);
+                setPaginationInfo({
+                    ...paginationInfo,
+                    total: paginationInfo.total - 1,
+                    to: paginationInfo.from == 1 ? paginationInfo.to - 1 : paginationInfo.to
+                });
+                setIsLoading(false);
+            })
+            .catch(error => {
+                setIsLoading(false);
+                const errorMessage = error?.response?.data?.error ?? SOMETHING_WENT_WRONG;
+                toast.error(<ToastComponent messages={errorMessage}/>);
+            });
     };
 
 
@@ -213,6 +253,7 @@ const Company = () => {
                             <Datatable data={dataList}
                                        columns={columns}
                                        handleEditCallback={handleEditCallback}
+                                       handleDeleteCallback={handleDelete}
                                        actions={actions} /> : <></>
                     }
                 </Col>
@@ -222,6 +263,15 @@ const Company = () => {
                 dataList.length ?
                     <PaginationComponent paginationInfo={paginationInfo}
                                          paginationCallback={paginationCallback}
+                    /> : <></>
+            }
+
+            {
+                showModal ?
+                    <DeleteConfirmation isOpen={showModal}
+                                        deleteCallback={handleDeleteConfirm}
+                                        closeCallback={() => setShowModal(!showModal)}
+
                     /> : <></>
             }
         </DashboardLayout>

@@ -1,12 +1,12 @@
 import React from "react";
 import { Button, Card, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
-import { PencilSquare, ArrowsAngleExpand } from 'react-bootstrap-icons';
+import { PencilSquare, Trash } from 'react-bootstrap-icons';
 
 const Datatable = ({
                        data,
                        columns,
                        handleEditCallback= undefined,
-                       handleDetailsCallback= undefined,
+                       handleDeleteCallback= undefined,
                        actions = []
 }) => {
 
@@ -36,9 +36,9 @@ const Datatable = ({
         </Tooltip>
     );
 
-    const detailsTooltip = (props) => (
+    const deleteTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
-            Details
+            Delete
         </Tooltip>
     );
 
@@ -66,32 +66,34 @@ const Datatable = ({
                                 <tr key={idx}>
                                     { getColumn(item) }
                                     {
-                                        actions.includes('update') ?
+                                        actions.length ?
                                             <td>
-                                                <OverlayTrigger delay={{ show: 250, hide: 400 }}
-                                                                overlay={editTooltip} defaultShow={false}
-                                                                placement="bottom">
-                                                    <Button size="md" variant="default" type="button"
-                                                            onClick={() => handleEditCallback(item.id)}>
-                                                        <PencilSquare />
-                                                    </Button>
-                                                </OverlayTrigger>
-                                            </td> : <></>
-                                    }
-                                    {
-                                        actions.includes('details') ?
-                                            <td>
-                                                <OverlayTrigger delay={{ show: 250, hide: 400 }}
-                                                                defaultShow={false}
-                                                                overlay={detailsTooltip}
-                                                                placement="bottom">
-                                                    <Button size="sm" variant="secondary" type="button"
-                                                            onClick={() => handleDetailsCallback(item.id)}>
-                                                        <ArrowsAngleExpand />
-                                                    </Button>
-                                                </OverlayTrigger>
+                                                {
+                                                    actions.includes('update') ?
+                                                        <OverlayTrigger delay={{ show: 250, hide: 400 }}
+                                                                        overlay={editTooltip} defaultShow={false}
+                                                                        placement="bottom">
+                                                            <Button size="md" variant="default" type="button"
+                                                                    onClick={() => handleEditCallback(item.id)}>
+                                                                <PencilSquare />
+                                                            </Button>
+                                                        </OverlayTrigger> : <></>
+                                                }
 
-                                            </td> : <></>
+                                                {
+                                                    actions.includes('delete') ?
+                                                        <OverlayTrigger delay={{ show: 250, hide: 400 }}
+                                                                        defaultShow={false}
+                                                                        overlay={deleteTooltip}
+                                                                        placement="bottom">
+                                                            <Button size="sm" variant="default" type="button"
+                                                                    onClick={() => handleDeleteCallback(item.id)}>
+                                                                <Trash color="red" />
+                                                            </Button>
+                                                        </OverlayTrigger> : <></>
+                                                }
+                                            </td>
+                                            : <></>
                                     }
                                 </tr>
                             )

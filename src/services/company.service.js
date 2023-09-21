@@ -31,3 +31,14 @@ export const storeCompany = async data => {
 export const updateCompany = async (data, id) => {
     return axios.put(`/company/${id}`, data);
 };
+
+
+/**
+ * Delete a company
+ *
+ * @param id
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const deleteCompany = async id => {
+    return axios.delete(`/company/${id}`);
+};
