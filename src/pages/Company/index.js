@@ -61,7 +61,7 @@ const Company = () => {
         hasPreviousPage: '',
     });
 
-    /** Get all/paginated ip address data for table **/
+    /** Get all/paginated data for table **/
     useEffect( () => {
         getDataList();
     }, [params]);
@@ -221,6 +221,46 @@ const Company = () => {
             });
     };
 
+    /**
+     * After add, update data table
+     * Show the new data at top
+     * Update pagination info
+     * @param data
+     */
+    const addCallback = data => {
+        console.log('data: ', data);
+        if (params.page == 1) {
+            const singleCompany =  Object.assign({}, data.data);
+            const companies = [...companyData];
+            companies.unshift(singleCompany);
+            setOriginalCompanyData(companies);
+
+            const newDataList = [...dataList];
+            newDataList.unshift(convertPhoneToImage(data.data));
+            setDataList([...newDataList]);
+            // "id": 8,
+            //     "name": "ZXCV Company",
+            //     "registration_code": "987654322",
+            //     "vat": "302801468",
+            //     "address": "Test Address",
+            //     "mobile_phone": "https://rekvizitai.vz.lt/timages/%3DHGZ1VQAmVQV1NPZ3ZmX.gif"
+
+            setPaginationInfo({
+                ...paginationInfo,
+                to: paginationInfo.to + 1,
+                total: paginationInfo.total + 1,
+            });
+            setIsLoading(false);
+        } else {
+            setParams({
+                ...params,
+                page: 1,
+            });
+        }
+
+        setIsLoading(false);
+    };
+
 
     return (
         <DashboardLayout logoutCallback={loaderCallback}>
@@ -237,8 +277,8 @@ const Company = () => {
                 <Col>
                     <Card >
                         <Card.Body>
-                            {/*addCallback={addCallback}*/}
-                            <AddUpdateForm updateData={oldCompanyData}
+                            <AddUpdateForm addCallback={addCallback}
+                                           updateData={oldCompanyData}
                                            updateCallback={updateCallback}
                                            loaderCallback={loaderCallback} />
                         </Card.Body>

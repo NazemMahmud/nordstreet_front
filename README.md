@@ -1,5 +1,5 @@
 # About
-**IP Address Management Solution Frontend**
+**Scrape Solution Frontend**
 
 # Table of Contents
 
@@ -14,7 +14,7 @@
 1. Get/Index API, with pagination operation/events 
 2. Add/update form to add or update form accordingly 
 3. Delete data with a confirmation modal. 
-4. Store data with scraping [todo]
+4. Store data with scraping
 
 
 # Installation

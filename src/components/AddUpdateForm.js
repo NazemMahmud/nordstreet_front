@@ -7,8 +7,7 @@ import { storeCompany, updateCompany } from "../services/company.service";
 import { checkDisableButton } from "../utility/utils";
 import { DATA_CREATE_SUCCESS, DATA_CREATE_FAILED, DATA_UPDATE_FAILED } from "../config/constants";
 
-// addCallback,
-const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
+const AddUpdateForm = ({ addCallback, updateData, updateCallback,  loaderCallback }) => {
     const [isDisabled, setIsDisabled] = useState(true);
     const [isUpdate, setIsUpdate] = useState(false);
 
@@ -18,7 +17,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
         {
             name: {
                 value: "",
-                isValid: false,
+                isValid: true,
                 helperText: "",
                 touched: false,
                 minLength: 1
@@ -32,21 +31,21 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
             },
             vat: {
                 value: "",
-                isValid: false,
+                isValid: true,
                 helperText: "",
                 touched: false,
                 minLength: 1
             },
             mobile_phone: {
                 value: "",
-                isValid: false,
+                isValid: true,
                 helperText: "",
                 touched: false,
                 minLength: 1
             },
             address: {
                 value: "",
-                isValid: false,
+                isValid: true,
                 helperText: "",
                 touched: false,
                 minLength: 1
@@ -125,31 +124,31 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
         const formData = { ...formInput };
         for (let item in formData) {
             formData[item].value = '';
-            formData[item].isValid = false;
+            formData[item].isValid = true;
             formData[item].touched = false;
         }
+        formData['registration_code'].isValid = false;
         setFormInput({ ...formInput, ...formData });
         setIsUpdate(false);
     };
 
 
-    // create new entry API call
     const create = async event => {
         event.preventDefault();
         const formData = {};
         for (let item in formInput) {
             formData[item] = formInput[item].value;
         }
-        // to start loader
+
         loaderCallback(true);
         await storeCompany(formData)
             .then(response => {
                 resetForm();
-                // addCallback(response.data.data);
+                addCallback(response.data);
                 toast.success(<ToastComponent messages={DATA_CREATE_SUCCESS} />);
             })
             .catch(error => {
-                const errorMessage = error?.response?.data?.error ?? DATA_CREATE_FAILED;
+                const errorMessage = error?.response?.data?.message ?? DATA_CREATE_FAILED;
                 loaderCallback(false);
                 toast.error(<ToastComponent messages={errorMessage}/>);
             });
@@ -196,7 +195,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
                             draggable/>
 
 
-            <Form className="text-left" onSubmit={updateData.id ? update : create}>
+            <Form className="text-left" onSubmit={updateData.id && isUpdate ? update : create}>
                 {/*Registration code*/}
                 <Form.Group className="mb-3" controlId="formCode">
                     <Form.Label> Registration Code <span style={{ color: 'red' }}> * </span> </Form.Label>
@@ -282,7 +281,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
                     </InputGroup>
                 </Form.Group>
 
-                {   updateData.id ?
+                {   updateData.id && isUpdate ?
                     <Button variant="secondary" type="button" className="float-right" style={{ marginLeft: '10px'}}
                     onClick={() => resetForm()}>
                         Cancel
@@ -290,7 +289,7 @@ const AddUpdateForm = ({ updateData, updateCallback,  loaderCallback }) => {
                 }
                 <Button variant="primary" type="submit" className="float-right"
                         disabled={isDisabled}>
-                    {updateData.id ? 'Update' : 'Submit'}
+                    {updateData.id && isUpdate ? 'Update' : 'Submit'}
                 </Button>
 
 
